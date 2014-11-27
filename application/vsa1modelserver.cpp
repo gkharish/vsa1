@@ -167,12 +167,12 @@
     		//if(control_len <= control_size-1)
     		for(control_len = 0; control_len <= control_size-1; control_len++)
     		{
-    		    bzero(buf, BUFSIZE);
+    		    
     		    VSA1axis -> server_recv(buf);
     		    
     		    u(control_len) = atof(buf);
     		    //flush buf
-    		    bzero(buf, BUFSIZE);
+    		    
     		    //control_len++;
     		    //serversend_FLAG = 1;
     		}
@@ -223,14 +223,12 @@
         		
         		for(state_len = 0; state_len <= states_size -1; state_len++)
         		{
-        		    bzero(state, sizeof(state));
-        		    bzero(buf, BUFSIZE);
+        		    
         		    state << newstate(state_len);
         		    strcpy(buf, state.str().c_str());
         		    VSA1axis -> server_send(buf);
         		    //flush buf
-        		    bzero(state, sizeof(state));
-        		    bzero(buf, BUFSIZE);
+        		    
         		}
         		
         		control_len = 0;
