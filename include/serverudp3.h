@@ -30,34 +30,33 @@ using namespace Eigen;
 #define BUFSIZE 2048
 
 class ServerUDP
-  {
-    public:
+{
+  public:
             
-            ServerUDP();
+        ServerUDP();
         
             
-            virtual ~ServerUDP();
+        virtual ~ServerUDP();
         
-            bool server_start();
-            bool server_send(char* pBuffer);
-            bool server_recv(char* pBuffer);
+        bool server_start();
+        bool server_send(char* pBuffer, int size);
+        bool server_recv(char* pBuffer, int size);
             
             
             
-    private:
+  private:
           
-          int _sFd, n;   //Socket
+        int _sFd, n;   //Socket
         
-            
-          struct sockaddr_in myaddr;	/* our address */
-        	struct sockaddr_in remaddr;	/* remote address */
-        	socklen_t addrlen;		/* length of addresses */
-        	int recvlen;			/* # bytes received */
-        	int fd;				/* our socket */
-        	int msgcnt;			/* count # of messages we received */
-        	//char buf[BUFSIZE];	/* receive buffer */
+        struct sockaddr_in myaddr;	/* our address */
+        struct sockaddr_in remaddr;	/* remote address */
+        socklen_t addrlen;		/* length of addresses */
+        int recvlen;			/* # bytes received */
+        int fd;				/* our socket */
+        int msgcnt;			/* count # of messages we received */
+        //char buf[BUFSIZE];	/* receive buffer */
     
-  };
+};
   
   
     
