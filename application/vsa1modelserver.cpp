@@ -80,7 +80,7 @@ VectorXd plant_model::integrateRK4 (double t, VectorXd state, VectorXd u, double
 
     VectorXd stNew = state + ( (1/6.0) * h * (st1 + 2.0*st2 + 2.0*st3 + st4) );
 
-    cout << "\n" << "integratorRK4 running";
+    
     return (stNew);
 }
         
@@ -224,8 +224,7 @@ int main(void)
 
     for (;;) 
     {
-        //cout << "\n Waiting on port : " <<  SERVICE_PORT << "\n";
-    		
+        
         VSA1axis -> server_recv(recv_buffer, BUFSIZE);
     		
         switch(recv_buffer[0])
@@ -236,7 +235,7 @@ int main(void)
     		        
     		    recv_packet_control = (udppacket_control *)recv_buffer;
     		        
-                std::cout << "\n  server message received is control unsigned int: " << *recv_packet_control << std::endl;
+                //std::cout << "\n  server message received is control unsigned int: " << *recv_packet_control << std::endl;
                 break;
             }
     		    
@@ -246,7 +245,7 @@ int main(void)
             {
                 recv_packet_bool = (udppacket_bool *)recv_buffer;
     		        
-                std::cout << "\n  server message received is bool type : " << *recv_packet_bool << std::endl;
+                //std::cout << "\n  server message received is bool type : " << *recv_packet_bool << std::endl;
                 break;
             }
     		    
@@ -266,12 +265,6 @@ int main(void)
         newstate = VSA1axis -> integrateRK4(t, previous_state, u, timestep);
                     
         previous_state = newstate;
-        cout << "\n newstate[3]\n" << newstate(3);       
-        double position_motor = newstate(0);
-        double speed_motor = newstate(1);
-        double position_link = newstate(2);
-        double speed_link = newstate(3);
-        double ref_pos = 0.52;
                 
         send_packet_DAQ.SERVER_HEADER = '0';
         send_packet_DAQ.data[0] = newstate(0);

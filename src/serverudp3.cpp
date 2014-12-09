@@ -53,7 +53,7 @@ bool ServerUDP::server_start()
     	return 0;
     }
     addrlen = sizeof(remaddr);
-    cout <<  "\n" << "Server started";
+    
     	
     return true;
 }
@@ -61,12 +61,12 @@ bool ServerUDP::server_start()
     
 bool ServerUDP::server_send(char* buf, int size)
 {
-    cout << "\n Server sending response link position : " << buf;
+
     	
     if (sendto(fd, buf, size, 0, (struct sockaddr *)&remaddr, addrlen) < 0)
 		perror("sendto");
     	
-    cout <<  " .... Server send done \n";
+
     return true;
 }
     
@@ -79,12 +79,12 @@ bool ServerUDP::server_recv(char* buf, int size)
 	if (recvlen > 0)
 	{
 	    buf[recvlen] = 0;
-		cout << "\n received message  control value u :" << buf;
+		
 	}
 	else
 	cout << "\n uh oh - something went wrong!\n";
 	
-	cout <<  "\n" << "...Server recv done";
+	
     return true;
 }
     
