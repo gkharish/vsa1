@@ -19,11 +19,7 @@
 
 
 #define GRAVITY 9.81 
-#define M 1
-#define K 1000
-#define L 1
-#define I 1
-#define J 1
+
 #define pi 3.14
 using namespace std;
 using namespace Eigen;
@@ -34,6 +30,8 @@ class  plant_model :  public systemdynamics, public integratedynamics,  public S
             double length_;
             double mass_;
             double friction_;
+            double M, B, Patm, Ps, Lo, b, n, r, tau, ps, cns, c, den, M_nom, B_nom, 
+                    K_ref, sigma1, G, lambda, phi;
             float pressure_muscle1_, pressure_muscle2_, pressure_musclebase_;
             
             int nDOF_;
@@ -49,6 +47,7 @@ class  plant_model :  public systemdynamics, public integratedynamics,  public S
                 void setParameters (void);
                 //void setpidcoeff(int p, int i, int d);
                 VectorXd computeStateDerivative (double time, VectorXd state, VectorXd control);
+                double computeStiffness(VectorXd state, VectorXd control);
                 VectorXd integrateRK4 (double time, VectorXd state, VectorXd control, double timeStep);
                 VectorXd integrateEuler (double time, VectorXd state, VectorXd control, double timeStep);
                 
