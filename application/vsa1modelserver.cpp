@@ -131,61 +131,85 @@ VectorXd plant_model::integrateEuler (double t, VectorXd state, VectorXd u, doub
 
   
 // Packets to be received //    
-struct udppacket_control
+struct udppacket_control                    // clientheader = '0';
 {
     char CLIENT_HEADER;
-    double control_cmd[3];
+    //double control_cmd[3];
+    unsigned int control_cmd[16];
 }client_packet_control;
     
-struct udppacket_bool
+struct udppacket_countersreset              // clientheader = '1';
 {
     char CLIENT_HEADER;
     bool data;
-}client_packet_bool;
+}client_packet_countersreset;
+
+struct udppacket_digitaloutputcontrol        // clientheader = '2';
+{
+    char CLIENT_HEADER;
+    bool data;
+}client_packet_digitaloutputcontrol;
 
 // packets to be sent //
 struct udppacket_DAQ
 {
-    char SERVER_HEADER;
+    char SERVER_HEADER;                     // serverheader = 'a';
     float data[32];
 }client_packet_DAQ;  
     
 struct udppacket_COUNTER
 {
-    char SERVER_HEADER;
+    char SERVER_HEADER;                     // serverheader = 'b';
     signed int data[12];
 }client_packet_COUNTER;  
- 
+
+struct udppacket_error                      // serverheader = 'c';
+{
+    char SERVER_HEADER;
+    unsigned char data[4];
+}client_packet_error; 
+
+
 std::ostream& operator<<(std::ostream& os, const struct udppacket_control & obj)
 {
     // write obj to stream
-    os << " " << obj.CLIENT_HEADER 
-    << " " << obj.control_cmd[0] 
-    << " " << obj.control_cmd[1] 
-    << " " << obj.control_cmd[2];
+     os << " " << obj.CLIENT_HEADER 
+	<< " " << obj.control_cmd[0] 
+	<< " " << obj.control_cmd[1] 
+	<< " " << obj.control_cmd[2];
     return os; 
 }  
     
-std::ostream& operator<<(std::ostream& os, const struct udppacket_bool & obj)
+std::ostream& operator<<(std::ostream& os, const struct udppacket_countersreset & obj)
 {
     // write obj to stream
     os << " " << obj.CLIENT_HEADER 
-    << " " << obj.data; 
+	<< " " << obj.data; 
+	 
     return os; 
 }  
-    
+
+std::ostream& operator<<(std::ostream& os, const struct udppacket_digitaloutputcontrol & obj)
+{
+    // write obj to stream
+    os << " " << obj.CLIENT_HEADER 
+	<< " " << obj.data; 
+	 
+    return os; 
+}
+
 std::ostream& operator<<(std::ostream& os, const struct udppacket_DAQ & obj)
 {
     // write obj to stream
     os << " " << obj.SERVER_HEADER 
     << " " << obj.data[0] 
-    << " " << obj.data[1]
+    << " " << obj.data[1] 
     << " " << obj.data[2]
     << " " << obj.data[3]
     << " " << obj.data[4];
     return os; 
 }  
-
+    
 std::ostream& operator<<(std::ostream& os, const struct udppacket_COUNTER & obj)
 {
     // write obj to stream
@@ -193,8 +217,18 @@ std::ostream& operator<<(std::ostream& os, const struct udppacket_COUNTER & obj)
     << " " << obj.data[0] 
     << " " << obj.data[1]; 
     return os; 
-}         
+}        
         
+std::ostream& operator<<(std::ostream& os, const struct udppacket_error & obj)
+{
+    // write obj to stream
+    os << " " << obj.SERVER_HEADER 
+    << " " << obj.data[0] 
+    << " " << obj.data[1]
+    << " " << obj.data[2]
+    << " " << obj.data[3];
+    return os; 
+}       
         
 int main(void)
 {
@@ -223,15 +257,16 @@ int main(void)
     double t, time_start_loop, present_time;
     
     /* Variables used in serverudp*/
-    int msgcnt = 0;
-    char buf[BUFSIZE];
+    
     
     udppacket_DAQ send_packet_DAQ;
     udppacket_COUNTER send_packet_COUNTER;
+    udppacket_error send_packet_error;
     char*  buffer_send;
   
     udppacket_control * recv_packet_control;
-    udppacket_bool * recv_packet_bool;  
+    udppacket_countersreset * recv_packet_countersreset;
+    udppacket_digitaloutputcontrol * recv_packet_digitaloutputcontrol;
     char recv_buffer[BUFSIZE];    
         
     /* Variables used in Timer*/
@@ -276,17 +311,24 @@ int main(void)
     	    {
     		        
     		    recv_packet_control = (udppacket_control *)recv_buffer;
-    		        
+    		    cout << "\n recv_packet_control \n" << *recv_packet_control;    
                 //std::cout << "\n  server message received is control unsigned int: " << *recv_packet_control << std::endl;
                 break;
             }
     		    
     		    
-    		    
             case '1' :
             {
-                recv_packet_bool = (udppacket_bool *)recv_buffer;
-    		        
+                recv_packet_countersreset = (udppacket_countersreset *)recv_buffer;
+    		    cout << "\n recv_packet_countersreset \n" << *recv_packet_countersreset;   
+                //std::cout << "\n  server message received is bool type : " << *recv_packet_bool << std::endl;
+                break;
+            }
+            
+            case '2' :
+            {
+                recv_packet_digitaloutputcontrol = (udppacket_digitaloutputcontrol *)recv_buffer;
+    		    cout << "\n recv_packet_digitaloutputcontrol \n" << *recv_packet_digitaloutputcontrol;   
                 //std::cout << "\n  server message received is bool type : " << *recv_packet_bool << std::endl;
                 break;
             }
@@ -296,7 +338,7 @@ int main(void)
         u << (*recv_packet_control).control_cmd[0], (*recv_packet_control).control_cmd[1];
              
             
-        cout << "\n double type control u :" << u;
+        //cout << "\n double type control u :" << u;
         /*clock_gettime(CLOCK_REALTIME, &spec);
         now  = spec.tv_sec;
         present_time = round(spec.tv_nsec / 1.0e9);
@@ -311,16 +353,43 @@ int main(void)
                     
         previous_state = newstate;
                 
-        send_packet_DAQ.SERVER_HEADER = '0';
+        /*send_packet_DAQ.SERVER_HEADER = '0';
         send_packet_DAQ.data[0] = newstate(0);
         send_packet_DAQ.data[1] = newstate(1);
         send_packet_DAQ.data[2] = newstate(2);        
         send_packet_DAQ.data[3] = newstate(3); 
-        send_packet_DAQ.data[4] = newstate(4);
+        send_packet_DAQ.data[4] = newstate(4);*/
+        
+        send_packet_DAQ.SERVER_HEADER = 'a';
+        send_packet_DAQ.data[0] = 3.00;
+        send_packet_DAQ.data[1] = 2.00;
+        send_packet_DAQ.data[2] = 1.002;        
+        send_packet_DAQ.data[3] = 3.098; 
+        send_packet_DAQ.data[4] = 4.42;
         buffer_send = (char*)&send_packet_DAQ;
         PAM1axis -> server_send(buffer_send, sizeof(send_packet_DAQ));
         struct udppacket_DAQ *asp = &send_packet_DAQ;
         std::cout << "\n  server message sent DAQ: " << *asp << std::endl;
+        
+        send_packet_COUNTER.SERVER_HEADER = 'b';
+        send_packet_COUNTER.data[0] = 1;
+        send_packet_COUNTER.data[1] = 2;
+        buffer_send = (char*)&send_packet_COUNTER;
+        PAM1axis -> server_send(buffer_send, sizeof(send_packet_COUNTER));
+        struct udppacket_COUNTER *asp_COUNTER = &send_packet_COUNTER;
+        std::cout << "\n  server message sent COUNTER: " << *asp_COUNTER << std::endl;
+        
+        send_packet_error.SERVER_HEADER = 'c';
+        send_packet_error.data[0] = 0;
+        send_packet_error.data[1] = 0;
+        send_packet_error.data[2] = 0;
+        send_packet_error.data[3] = 0;
+        buffer_send = (char*)&send_packet_COUNTER;
+        PAM1axis -> server_send(buffer_send, sizeof(send_packet_error));
+        struct udppacket_error *asp_error = &send_packet_error;
+        std::cout << "\n  server message sent error: " << *asp_error << std::endl;
+        
+        
         std::cout << "time at : " << t;  
     }
 }
