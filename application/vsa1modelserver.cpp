@@ -134,8 +134,8 @@ VectorXd plant_model::integrateEuler (double t, VectorXd state, VectorXd u, doub
 struct udppacket_control                    // clientheader = '0';
 {
     char CLIENT_HEADER;
-    //double control_cmd[3];
-    unsigned int control_cmd[16];
+    double control_cmd[3];
+    //unsigned int control_cmd[16];
 }client_packet_control;
     
 struct udppacket_countersreset              // clientheader = '1';
@@ -243,14 +243,14 @@ int main(void)
             
     /*Variables of system dynamics state space*/
     VectorXd initial_state(5); 
-    initial_state << 0, 0, 0, 101e3, 101e3;
+    initial_state << 0.01, 0, 0, 101e3, 101e3;
 
     /*  Variables used in Controller */
     int p = -1;
     int i = 1;
     int d = 1;
-    VectorXd u(2);
-    u << 0 , 0;
+    VectorXd u(3);
+    u << 0.1 , 0, 0;
     
     /*  Variables used in real time Timer   */     
     RTIME  now, previous, TASK_PERIOD = 1000000;
@@ -315,27 +315,22 @@ int main(void)
                 now = rt_timer_read();
                 present_time  = round(now/1.0e9);
                 t = present_time - time_start_loop;    
-                
+                u << (*recv_packet_control).control_cmd[0], (*recv_packet_control).control_cmd[1], 0;
                 newstate = PAM1axis -> integrateRK4(t, previous_state, u, timestep);
                 
-                /*send_packet_DAQ.SERVER_HEADER = '0';
+                send_packet_DAQ.SERVER_HEADER = 'a';
                 send_packet_DAQ.data[0] = newstate(0);
                 send_packet_DAQ.data[1] = newstate(1);
                 send_packet_DAQ.data[2] = newstate(2);        
                 send_packet_DAQ.data[3] = newstate(3); 
-                send_packet_DAQ.data[4] = newstate(4);*/
+                send_packet_DAQ.data[4] = newstate(4);
                 
-                send_packet_DAQ.SERVER_HEADER = 'a';
-                send_packet_DAQ.data[0] = 3.00;
-                send_packet_DAQ.data[1] = 2.00;
-                send_packet_DAQ.data[2] = 1.002;        
-                send_packet_DAQ.data[3] = 3.098; 
-                send_packet_DAQ.data[4] = 4.42;
+                
                 buffer_send = (char*)&send_packet_DAQ;
                 PAM1axis -> server_send(buffer_send, sizeof(send_packet_DAQ));
                 struct udppacket_DAQ *asp = &send_packet_DAQ;
                 std::cout << "\n  server message sent DAQ: " << *asp << std::endl;
-                
+                previous_state = newstate;
                 break;
             }
     		    
@@ -374,7 +369,7 @@ int main(void)
     		    
         }
         
-        u << (*recv_packet_control).control_cmd[0], (*recv_packet_control).control_cmd[1];
+        
              
             
         //cout << "\n double type control u :" << u;
@@ -386,7 +381,7 @@ int main(void)
         
         
                     
-        previous_state = newstate;
+        
                 
 
         std::cout << "time at : " << t;  
