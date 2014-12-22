@@ -4,4 +4,4 @@
  * digits of your id + 1024
  */
 
-#define SERVICE_PORT	21234	/* hard-coded port number */
+#define SERVICE_PORT	8008	/* hard-coded port number */
