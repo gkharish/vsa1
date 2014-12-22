@@ -134,8 +134,8 @@ VectorXd plant_model::integrateEuler (double t, VectorXd state, VectorXd u, doub
 struct udppacket_control                    // clientheader = '0';
 {
     char CLIENT_HEADER;
-    double control_cmd[3];
-    //unsigned int control_cmd[16];
+    //double control_cmd[3];
+    unsigned int control_cmd[16];
 }client_packet_control;
     
 struct udppacket_countersreset              // clientheader = '1';
