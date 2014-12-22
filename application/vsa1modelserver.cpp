@@ -312,7 +312,30 @@ int main(void)
     		        
     		    recv_packet_control = (udppacket_control *)recv_buffer;
     		    cout << "\n recv_packet_control \n" << *recv_packet_control;    
-                //std::cout << "\n  server message received is control unsigned int: " << *recv_packet_control << std::endl;
+                now = rt_timer_read();
+                present_time  = round(now/1.0e9);
+                t = present_time - time_start_loop;    
+                
+                newstate = PAM1axis -> integrateRK4(t, previous_state, u, timestep);
+                
+                /*send_packet_DAQ.SERVER_HEADER = '0';
+                send_packet_DAQ.data[0] = newstate(0);
+                send_packet_DAQ.data[1] = newstate(1);
+                send_packet_DAQ.data[2] = newstate(2);        
+                send_packet_DAQ.data[3] = newstate(3); 
+                send_packet_DAQ.data[4] = newstate(4);*/
+                
+                send_packet_DAQ.SERVER_HEADER = 'a';
+                send_packet_DAQ.data[0] = 3.00;
+                send_packet_DAQ.data[1] = 2.00;
+                send_packet_DAQ.data[2] = 1.002;        
+                send_packet_DAQ.data[3] = 3.098; 
+                send_packet_DAQ.data[4] = 4.42;
+                buffer_send = (char*)&send_packet_DAQ;
+                PAM1axis -> server_send(buffer_send, sizeof(send_packet_DAQ));
+                struct udppacket_DAQ *asp = &send_packet_DAQ;
+                std::cout << "\n  server message sent DAQ: " << *asp << std::endl;
+                
                 break;
             }
     		    
@@ -321,7 +344,14 @@ int main(void)
             {
                 recv_packet_countersreset = (udppacket_countersreset *)recv_buffer;
     		    cout << "\n recv_packet_countersreset \n" << *recv_packet_countersreset;   
-                //std::cout << "\n  server message received is bool type : " << *recv_packet_bool << std::endl;
+                send_packet_COUNTER.SERVER_HEADER = 'b';
+                send_packet_COUNTER.data[0] = 1;
+                send_packet_COUNTER.data[1] = 2;
+                buffer_send = (char*)&send_packet_COUNTER;
+                PAM1axis -> server_send(buffer_send, sizeof(send_packet_COUNTER));
+                struct udppacket_COUNTER *asp_COUNTER = &send_packet_COUNTER;
+                std::cout << "\n  server message sent COUNTER: " << *asp_COUNTER << std::endl;
+                
                 break;
             }
             
@@ -329,7 +359,16 @@ int main(void)
             {
                 recv_packet_digitaloutputcontrol = (udppacket_digitaloutputcontrol *)recv_buffer;
     		    cout << "\n recv_packet_digitaloutputcontrol \n" << *recv_packet_digitaloutputcontrol;   
-                //std::cout << "\n  server message received is bool type : " << *recv_packet_bool << std::endl;
+                send_packet_error.SERVER_HEADER = 'c';
+                send_packet_error.data[0] = 0;
+                send_packet_error.data[1] = 0;
+                send_packet_error.data[2] = 0;
+                send_packet_error.data[3] = 0;
+                buffer_send = (char*)&send_packet_COUNTER;
+                PAM1axis -> server_send(buffer_send, sizeof(send_packet_error));
+                struct udppacket_error *asp_error = &send_packet_error;
+                std::cout << "\n  server message sent error: " << *asp_error << std::endl;
+                
                 break;
             }
     		    
@@ -345,51 +384,11 @@ int main(void)
             
         t = present_time - previous_time;*/
         
-        now = rt_timer_read();
-        present_time  = round(now/1.0e9);
-        t = present_time - time_start_loop;    
-        //u << 0.6, 0.4;
-        newstate = PAM1axis -> integrateRK4(t, previous_state, u, timestep);
+        
                     
         previous_state = newstate;
                 
-        /*send_packet_DAQ.SERVER_HEADER = '0';
-        send_packet_DAQ.data[0] = newstate(0);
-        send_packet_DAQ.data[1] = newstate(1);
-        send_packet_DAQ.data[2] = newstate(2);        
-        send_packet_DAQ.data[3] = newstate(3); 
-        send_packet_DAQ.data[4] = newstate(4);*/
-        
-        send_packet_DAQ.SERVER_HEADER = 'a';
-        send_packet_DAQ.data[0] = 3.00;
-        send_packet_DAQ.data[1] = 2.00;
-        send_packet_DAQ.data[2] = 1.002;        
-        send_packet_DAQ.data[3] = 3.098; 
-        send_packet_DAQ.data[4] = 4.42;
-        buffer_send = (char*)&send_packet_DAQ;
-        PAM1axis -> server_send(buffer_send, sizeof(send_packet_DAQ));
-        struct udppacket_DAQ *asp = &send_packet_DAQ;
-        std::cout << "\n  server message sent DAQ: " << *asp << std::endl;
-        
-        send_packet_COUNTER.SERVER_HEADER = 'b';
-        send_packet_COUNTER.data[0] = 1;
-        send_packet_COUNTER.data[1] = 2;
-        buffer_send = (char*)&send_packet_COUNTER;
-        PAM1axis -> server_send(buffer_send, sizeof(send_packet_COUNTER));
-        struct udppacket_COUNTER *asp_COUNTER = &send_packet_COUNTER;
-        std::cout << "\n  server message sent COUNTER: " << *asp_COUNTER << std::endl;
-        
-        send_packet_error.SERVER_HEADER = 'c';
-        send_packet_error.data[0] = 0;
-        send_packet_error.data[1] = 0;
-        send_packet_error.data[2] = 0;
-        send_packet_error.data[3] = 0;
-        buffer_send = (char*)&send_packet_COUNTER;
-        PAM1axis -> server_send(buffer_send, sizeof(send_packet_error));
-        struct udppacket_error *asp_error = &send_packet_error;
-        std::cout << "\n  server message sent error: " << *asp_error << std::endl;
-        
-        
+
         std::cout << "time at : " << t;  
     }
 }
