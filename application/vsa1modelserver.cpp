@@ -326,9 +326,10 @@ int main(void)
                 
                 
                 buffer_send = (char*)&send_packet_DAQ;
-                //PAM1axis -> server_send(buffer_send, sizeof(send_packet_DAQ));
+                //cout << "\n sending data to control \n" << endl;
+                PAM1axis -> server_send(buffer_send, sizeof(send_packet_DAQ));
                 struct udppacket_DAQ *asp = &send_packet_DAQ;
-                //std::cout << "\n  server message sent DAQ: " << *asp << std::endl;
+                std::cout << "\n  server message sent DAQ: " << *asp << std::endl;
                 previous_state = newstate;
                 break;
             }
