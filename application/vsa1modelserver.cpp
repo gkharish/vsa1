@@ -134,7 +134,7 @@ VectorXd plant_model::integrateEuler (double t, VectorXd state, VectorXd u, doub
 struct udppacket_control                    // clientheader = '0';
 {
     char CLIENT_HEADER;
-    //double control_cmd[3];
+    //double control_cmd;
     unsigned int control_cmd;
 }client_packet_control;
     
@@ -314,7 +314,7 @@ int main(void)
                 now = rt_timer_read();
                 present_time  = round(now/1.0e9);
                 t = present_time - time_start_loop;    
-                //u << (*recv_packet_control).control_cmd[0], (*recv_packet_control).control_cmd[1], 0;
+                u << (*recv_packet_control).control_cmd, (*recv_packet_control).control_cmd, 0;
                 newstate = PAM1axis -> integrateRK4(t, previous_state, u, timestep);
                 
                 send_packet_DAQ.SERVER_HEADER = 'a';
